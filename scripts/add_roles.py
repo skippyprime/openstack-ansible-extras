@@ -7,7 +7,7 @@ import collections
 import yaml
 
 
-OA_SUBMODULE = 'opensatck-ansible'
+OA_SUBMODULE = 'openstack-ansible'
 
 
 def ensure_roles_format(roles):
@@ -91,7 +91,7 @@ def main():
         print('Target openstack-ansible roles file missing: {:s}'.format(
             args.file))
         has_invalid_args = True
-    if not os.path.isfile(args.file):
+    if not os.path.isfile(args.roles):
         print('Extra roles file missing: {:s}'.format(
             args.roles))
         has_invalid_args = True
@@ -101,6 +101,8 @@ def main():
         sys.exit(1)
 
     merge_roles(args.file, args.roles, args.update)
+
+    print('Roles updated')
 
 
 if __name__ == "__main__":

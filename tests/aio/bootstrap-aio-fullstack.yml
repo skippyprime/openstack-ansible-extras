@@ -1,0 +1,55 @@
+---
+- name: Bootstrap the All-In-One (AIO) for Fullstack
+  hosts: localhost
+  user: root
+  tasks:
+    - name: Create the required directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "/etc/openstack_deploy/env.d"
+        - "/etc/openstack_deploy/conf.d"
+      tags:
+        - create-directories
+
+    - name: Deploy fullstack env.d configuration
+      copy:
+        src: "../../fullstack/etc/openstack_deploy/env.d/{{ item.name }}"
+        dest: "/etc/openstack_deploy/env.d/{{ item.name }}"
+      with_items:
+        - name: designate.yml
+      tags:
+        - deploy-fullstack-envd
+
+    - name: Deploy user conf.d configuration
+      config_template:
+        src: "../../fullstack/etc/openstack_deploy/conf.d/{{ item.name }}"
+        dest: "/etc/openstack_deploy/conf.d/{{ item.name | regex_replace('.aio$', '') }}"
+        config_overrides: "{{ item.override | default({}) }}"
+        config_type: "yaml"
+      with_items:
+        - name: designate.yml.aio
+      tags:
+        - deploy-fullstack-confd
+
+    - name: Deploy fullstack extra repos
+      copy:
+        src: "../../fullstack/etc/openstack_deploy/user_fullstack_repos.yml"
+        dest: "/etc/openstack_deploy/user_fullstack_repos.yml"
+      tags:
+        - deploy-fullstack-repos
+
+    - name: Deploy user_secrets file
+      config_template:
+        src: "../../fullstack/etc/openstack_deploy/user_fullstack_secrets.yml"
+        dest: "/etc/openstack_deploy/user_fullstack_secrets.yml"
+        config_overrides: "{{ user_fullstack_secrets_overrides | default({}) }}"
+        config_type: "yaml"
+      tags:
+        - deploy-fullstack-secrets
+
+    - name: Generate any missing values in user_secrets
+      shell: ../../openstack-ansible/scripts/pw-token-gen.py --file /etc/openstack_deploy/user_fullstack_secrets.yml
+      tags:
+        - generate_secrets

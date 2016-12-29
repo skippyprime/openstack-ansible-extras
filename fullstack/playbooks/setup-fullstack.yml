@@ -1,0 +1,3 @@
+---
+#- include: check-versions.yml
+- include: os-designate-install.yml
