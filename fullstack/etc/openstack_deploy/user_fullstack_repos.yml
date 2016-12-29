@@ -1,0 +1,5 @@
+## Designate service
+designate_git_repo: https://git.openstack.org/openstack/designate
+designate_git_install_branch: c0c599b2f5ea861f515e82ec8b1dad30c11e2575 # HEAD of "stable/netwon" as of 29.12.2016
+designate_git_dest: "/opt/designate_{{designate_git_install_branch | replace('/', '_') }}"
+designate_git_project_group: designate_all

@@ -1,0 +1,4 @@
+- name: os_designate
+  scm: git
+  src: https://github.com/skippyprime/openstack-ansible-os_designate
+  version: daeb498003dd58bfcfc017554613bd220c26340f
