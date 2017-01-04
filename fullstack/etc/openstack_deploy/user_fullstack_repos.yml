@@ -1,5 +1,11 @@
 ## Designate service
 designate_git_repo: https://git.openstack.org/openstack/designate
-designate_git_install_branch: c0c599b2f5ea861f515e82ec8b1dad30c11e2575 # HEAD of "stable/netwon" as of 29.12.2016
+designate_git_install_branch: c0c599b2f5ea861f515e82ec8b1dad30c11e2575 # HEAD of "stable/newton" as of 29.12.2016
 designate_git_dest: "/opt/designate_{{designate_git_install_branch | replace('/', '_') }}"
 designate_git_project_group: designate_all
+
+## Trove service
+trove_git_repo: https://git.openstack.org/openstack/trove
+trove_git_install_branch: 6907ba8ef2266e6fa31d4691c1c50e7b0ecc3a35 # HEAD of "stable/newton" as of 03.01.2016
+trove_git_dest: "/opt/trove_{{trove_git_install_branch | replace('/', '_') }}"
+trove_git_project_group: trove_all

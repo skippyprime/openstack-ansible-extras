@@ -4,187 +4,57 @@
   max_fail_percentage: 20
   user: root
   pre_tasks:
-    - name: Use the lxc-openstack aa profile
-      lxc_container:
-        name: "{{ container_name }}"
-        container_config:
-          - "lxc.aa_profile=lxc-openstack"
-      delegate_to: "{{ physical_host }}"
-      when: not is_metal | bool
-      register: container_config
-      tags:
-        - lxc-aa-profile
-    - name: Wait for container ssh
-      wait_for:
-        port: "22"
-        delay: "{{ ssh_delay }}"
-        search_regex: "OpenSSH"
-        host: "{{ ansible_ssh_host }}"
-      delegate_to: "{{ physical_host }}"
-      when: container_config is defined and container_config | changed
-      register: ssh_wait_check
-      until: ssh_wait_check | success
-      retries: 3
-      tags:
-        - ssh-wait
-    - name: Sort the rabbitmq servers
-      dist_sort:
-        value_to_lookup: "{{ container_name }}"
-        ref_list: "{{ groups['designate_all'] }}"
-        src_list: "{{ rabbitmq_servers }}"
-      register: servers
-    - name: Set rabbitmq servers
-      set_fact:
-        rabbitmq_servers: "{{ servers.sorted_list }}"
-    - name: Create log dir
-      file:
-        path: "{{ item.path }}"
-        state: directory
-      with_items:
-        - { path: "/openstack/log/{{ inventory_hostname }}-designate" }
-      when: is_metal | bool
-      tags:
-        - designate-logs
-        - designate-log-dirs
-    - name: Create log aggregation links
-      file:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        state: "{{ item.state }}"
-        force: "yes"
-      with_items:
-        - { src: "/openstack/log/{{ inventory_hostname }}-designate", dest: "/var/log/designate", state: "link" }
-      when: is_metal | bool
-      tags:
-        - designate-logs
-    - name: Ensure Rabbitmq vhost
-      rabbitmq_vhost:
-        name: "{{ designate_rabbitmq_vhost }}"
-        state: "present"
-      delegate_to: "{{ groups['rabbitmq_all'][0] }}"
-      when:
-        - inventory_hostname == groups['designate_all'][0]
-        - groups['rabbitmq_all']|length > 0
-      tags:
-        - designate-rabbitmq
-        - designate-rabbitmq-vhost
-    - name: Ensure rabbitmq user
-      rabbitmq_user:
+    - include: ../../openstack-ansible/playbooks/common-tasks/os-lxc-container-setup.yml
+    - include: ../../openstack-ansible/playbooks/common-tasks/os-log-dir-setup.yml
+      vars:
+        log_dirs:
+          - src: "/openstack/log/{{ inventory_hostname }}-designate"
+            dest: "/var/log/designate"
+    - include: ../../openstack-ansible/playbooks/common-tasks/rabbitmq-vhost-user.yml
+      static: no
+      vars:
         user: "{{ designate_rabbitmq_userid }}"
         password: "{{ designate_rabbitmq_password }}"
         vhost: "{{ designate_rabbitmq_vhost }}"
-        configure_priv: ".*"
-        read_priv: ".*"
-        write_priv: ".*"
-        state: "present"
-      delegate_to: "{{ groups['rabbitmq_all'][0] }}"
+        _rabbitmq_host_group: "{{ designate_rabbitmq_host_group }}"
       when:
         - inventory_hostname == groups['designate_all'][0]
-        - groups['rabbitmq_all']|length > 0
-      tags:
-        - designate-rabbitmq
-        - designate-rabbitmq-user
-    - name: Ensure Rabbitmq vhost
-      rabbitmq_vhost:
-        name: "{{ designate_rabbitmq_telemetry_vhost }}"
-        state: "present"
-      delegate_to: "{{ groups['rabbitmq_all'][0] }}"
-      when:
-        - designate_ceilometer_enabled | bool
-        - inventory_hostname == groups['designate_all'][0]
-        - groups[designate_rabbitmq_telemetry_host_group] is defined
-        - groups[designate_rabbitmq_telemetry_host_group] | length > 0
-        - groups[designate_rabbitmq_telemetry_host_group] != groups[designate_rabbitmq_host_group]
-      tags:
-        - designate-rabbitmq
-        - designate-rabbitmq-vhost
-    - name: Ensure rabbitmq user
-      rabbitmq_user:
+        - groups[designate_rabbitmq_host_group] | length > 0
+    - include: ../../openstack-ansible/playbooks/common-tasks/rabbitmq-vhost-user.yml
+      static: no
+      vars:
         user: "{{ designate_rabbitmq_telemetry_userid }}"
         password: "{{ designate_rabbitmq_telemetry_password }}"
         vhost: "{{ designate_rabbitmq_telemetry_vhost }}"
-        configure_priv: ".*"
-        read_priv: ".*"
-        write_priv: ".*"
-        state: "present"
-      delegate_to: "{{ groups['rabbitmq_all'][0] }}"
+        _rabbitmq_host_group: "{{ designate_rabbitmq_telemetry_host_group }}"
       when:
         - designate_ceilometer_enabled | bool
         - inventory_hostname == groups['designate_all'][0]
         - groups[designate_rabbitmq_telemetry_host_group] is defined
         - groups[designate_rabbitmq_telemetry_host_group] | length > 0
         - groups[designate_rabbitmq_telemetry_host_group] != groups[designate_rabbitmq_host_group]
-      tags:
-        - designate-rabbitmq
-        - designate-rabbitmq-user
-
-
-    - name: Create DB for Designate
-      mysql_db:
-        login_user: "{{ galera_root_user }}"
-        login_password: "{{ galera_root_password }}"
-        login_host: "{{ designate_galera_address }}"
-        name: "{{ designate_galera_database_name }}"
-        state: "present"
-      delegate_to: "{{ groups['galera_all'][0] }}"
-      when: inventory_hostname == groups['designate_all'][0]
-      tags:
-        - designate-db-setup
-    - name: Grant access to the DB for Designate
-      mysql_user:
-        login_user: "{{ galera_root_user }}"
-        login_password: "{{ galera_root_password }}"
-        login_host: "{{ designate_galera_address }}"
-        name: "{{ designate_galera_user }}"
+    - include: ../../openstack-ansible/playbooks/common-tasks/mysql-db-user.yml
+      static: no
+      vars:
+        user_name: "{{ designate_galera_user }}"
         password: "{{ designate_galera_password }}"
-        host: "{{ item }}"
-        state: "present"
-        priv: "{{ designate_galera_database_name }}.*:ALL"
-      with_items:
-        - "localhost"
-        - "%"
-      delegate_to: "{{ groups['galera_all'][0] }}"
+        login_host: "{{ designate_galera_address }}"
+        db_name: "{{ designate_galera_database_name }}"
       when: inventory_hostname == groups['designate_all'][0]
-      run_once: true
-      tags:
-        - designate-db-setup
-
-    - name: Create DB for Designate pool manager
-      mysql_db:
-        login_user: "{{ galera_root_user }}"
-        login_password: "{{ galera_root_password }}"
-        login_host: "{{ designate_pool_manager_galera_address }}"
-        name: "{{ designate_pool_manager_galera_database_name }}"
-        state: "present"
-      delegate_to: "{{ groups['galera_all'][0] }}"
-      when: inventory_hostname == groups['designate_all'][0]
-      tags:
-        - designate-db-setup
-    - name: Grant access to the DB for Designate pool manager
-      mysql_user:
-        login_user: "{{ galera_root_user }}"
-        login_password: "{{ galera_root_password }}"
-        login_host: "{{ designate_pool_manager_galera_address }}"
-        name: "{{ designate_pool_manager_galera_user }}"
+    - include: ../../openstack-ansible/playbooks/common-tasks/mysql-db-user.yml
+      static: no
+      vars:
+        user_name: "{{ designate_pool_manager_galera_user }}"
         password: "{{ designate_pool_manager_galera_password }}"
-        host: "{{ item }}"
-        state: "present"
-        priv: "{{ designate_pool_manager_galera_database_name }}.*:ALL"
-      with_items:
-        - "localhost"
-        - "%"
-      delegate_to: "{{ groups['galera_all'][0] }}"
+        login_host: "{{ designate_pool_manager_galera_address }}"
+        db_name: "{{ designate_pool_manager_galera_database_name }}"
       when: inventory_hostname == groups['designate_all'][0]
-      run_once: true
-      tags:
-        - designate-db-setup
-
 
 
   roles:
     - role: "os_designate"
       designate_venv_tag: "{{ openstack_release }}"
-      designate_venv_download_url: "{{ openstack_repo_url }}/venvs/{{ openstack_release }}/{{ ansible_distribution | lower }}/designate-{{ openstack_release }}.tgz"
+      designate_venv_download_url: "{{ openstack_repo_url }}/venvs/{{ openstack_release }}/{{ ansible_distribution | lower }}/designate-{{ openstack_release }}-{{ ansible_architecture | lower }}.tgz"
       tags:
         - "os-designate"
     - { role: "openstack_openrc", tags: [ "openstack-openrc" ] }
@@ -195,11 +65,4 @@
       tags:
         - "designate-rsyslog-client"
   vars:
-    rabbitmq_host_group: "rabbitmq_all"
-    galera_address: "{{ internal_lb_vip_address }}"
     is_metal: "{{ properties.is_metal|default(false) }}"
-    designate_rabbitmq_userid: designate
-    designate_rabbitmq_vhost: /designate
-    designate_rabbitmq_servers: "{{ rabbitmq_servers }}"
-    designate_rabbitmq_port: "{{ rabbitmq_port }}"
-    designate_rabbitmq_use_ssl: "{{ rabbitmq_use_ssl }}"

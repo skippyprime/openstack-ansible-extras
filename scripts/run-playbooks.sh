@@ -4,11 +4,11 @@
 set -e -u -x
 
 # Run the normal playbook process
-pushd openstack-ansible > /dev/null
+#pushd openstack-ansible > /dev/null
 
-( ./scripts/run-playbooks.sh )
+#( ./scripts/run-playbooks.sh )
 
-popd > /dev/null
+#popd > /dev/null
 
 # Extra options to pass to ansible command
 ANSIBLE_PARAMETERS=${ANSIBLE_PARAMETERS:--e gather_facts=False}

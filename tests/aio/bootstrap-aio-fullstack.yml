@@ -19,6 +19,7 @@
         dest: "/etc/openstack_deploy/env.d/{{ item.name }}"
       with_items:
         - name: designate.yml
+        - name: trove.yml
       tags:
         - deploy-fullstack-envd
 
@@ -30,8 +31,18 @@
         config_type: "yaml"
       with_items:
         - name: designate.yml.aio
+        - name: trove.yml.aio
       tags:
         - deploy-fullstack-confd
+
+    - name: Deploy extra variables files
+      copy:
+        src: "../../fullstack/etc/openstack_deploy/{{ item.name }}"
+        dest: "/etc/openstack_deploy/{{ item.name }}"
+      with_items:
+        - name: user_fullstack_haproxy.yml
+      tags:
+        - deploy-fullstack-repos
 
     - name: Deploy fullstack extra repos
       copy:

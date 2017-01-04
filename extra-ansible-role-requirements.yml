@@ -1,4 +1,8 @@
 - name: os_designate
   scm: git
   src: https://github.com/skippyprime/openstack-ansible-os_designate
-  version: daeb498003dd58bfcfc017554613bd220c26340f
+  version: 74969952d7e575cd35303bae7624a8664c85e503
+- name: os_trove
+  scm: git
+  src: https://github.com/skippyprime/openstack-ansible-os_trove
+  version: a320d2092ae1575198fb4b8c0ae2fea4ba2a298c
