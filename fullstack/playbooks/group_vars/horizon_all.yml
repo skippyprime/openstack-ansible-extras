@@ -1,0 +1,6 @@
+---
+# If there are any Trove hosts in the environment, then enable designate-dashboard
+horizon_enable_designate_ui: "{{ (groups['designate_all'] is defined) and (groups['designate_all'] | length > 0) }}"
+
+# If there are any Trove hosts in the environment, then enable trove-dashboard
+horizon_enable_trove_ui: "{{ (groups['trove_all'] is defined) and (groups['trove_all'] | length > 0) }}"

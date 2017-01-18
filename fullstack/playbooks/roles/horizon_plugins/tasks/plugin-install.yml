@@ -1,0 +1,18 @@
+---
+- name: Install pip packages
+  pip:
+    name: "{{ item }}"
+    state: "{{ horizon_pip_package_state }}"
+    virtualenv: "{{ horizon_bin | dirname }}"
+    virtualenv_site_packages: "no"
+    extra_args: >-
+      {{ horizon_developer_mode | ternary('--constraint /opt/developer-pip-constraints.txt', '') }}
+      {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
+      {{ pip_install_options | default('') }}
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 2
+  with_items: "{{ horizon_plugin_pip_packages }}"
+  when: horizon_get_venv | failed or horizon_get_venv | skipped
+  notify: Restart apache2

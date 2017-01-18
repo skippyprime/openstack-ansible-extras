@@ -1,4 +1,4 @@
 ---
-#- include: check-versions.yml
 - include: os-designate-install.yml
 - include: os-trove-install.yml
+- include: os-horizon-plugin-install.yml

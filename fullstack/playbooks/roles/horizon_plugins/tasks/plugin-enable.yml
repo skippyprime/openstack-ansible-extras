@@ -1,0 +1,36 @@
+---
+- name: Enable the designate-dashboard Horizon panel
+  file:
+    src: "{{ item.src }}"
+    path: "{{ item.path }}"
+    state: "{{ horizon_enable_designate_ui | ternary('link', 'absent') }}"
+  with_items:
+    - src: "{{ horizon_lib_dir }}/designatedashboard/enabled/_1710_project_dns_panel_group.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/local/enabled/_1710_project_dns_panel_group.py"
+    - src: "{{ horizon_lib_dir }}/designatedashboard/enabled/_1720_project_dns_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/local/enabled/_1720_project_dns_panel.py"
+    - src: "{{ horizon_lib_dir }}/designatedashboard/enabled/_1721_dns_zones_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/local/enabled/_1721_dns_zones_panel.py"
+    - src: "{{ horizon_lib_dir }}/designatedashboard/enabled/_1722_dns_reversedns_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/local/enabled/_1722_dns_reversedns_panel.py"
+  notify: Restart apache2
+
+- name: Enable the trove-dashboard Horizon panel
+  file:
+    src: "{{ item.src }}"
+    path: "{{ item.path }}"
+    state: "{{ horizon_enable_trove_ui | ternary('link', 'absent') }}"
+  with_items:
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1710_database_panel_group.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1710_database_panel_group.py"
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1720_project_databases_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1720_project_databases_panel.py"
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1730_project_database_backups_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1730_project_database_backups_panel.py"
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1731_project_database_backups_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1731_project_database_backups_panel.py"
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1740_project_database_clusters_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1740_project_database_clusters_panel.py"
+    - src: "{{ horizon_lib_dir }}/trove_dashboard/enabled/_1760_project_database_configurations_panel.py"
+      path: "{{ horizon_lib_dir }}/openstack_dashboard/enabled/_1760_project_database_configurations_panel.py"
+  notify: Restart apache2

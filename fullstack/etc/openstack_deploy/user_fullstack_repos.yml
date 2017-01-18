@@ -6,6 +6,18 @@ designate_git_project_group: designate_all
 
 ## Trove service
 trove_git_repo: https://git.openstack.org/openstack/trove
-trove_git_install_branch: 6907ba8ef2266e6fa31d4691c1c50e7b0ecc3a35 # HEAD of "stable/newton" as of 03.01.2016
+trove_git_install_branch: 6907ba8ef2266e6fa31d4691c1c50e7b0ecc3a35 # HEAD of "stable/newton" as of 03.01.2017
 trove_git_dest: "/opt/trove_{{trove_git_install_branch | replace('/', '_') }}"
 trove_git_project_group: trove_all
+
+## Horizon Designate dashboard plugin
+designate_dashboard_git_repo: https://git.openstack.org/openstack/designate-dashboard
+designate_dashboard_git_install_branch: ce5774b8ec6665b70dbdd032c1466a38fd674034 # HEAD of "stable/newton" as of 18.01.2017
+designate_dashboard_git_dest: "/opt/designate_dashboard_{{ designate_dashboard_git_install_branch | replace('/', '_') }}"
+designate_dashboard_git_project_group: horizon_all
+
+## Horizon Trove dashboard plugin
+trove_dashboard_git_repo: https://git.openstack.org/openstack/trove-dashboard
+trove_dashboard_git_install_branch: d8cfa94dfd968daedb1b71d1cd2c3f66a1e45440 # HEAD of "stable/newton" as of 18.01.2017
+trove_dashboard_git_dest: "/opt/trove_dashboard_{{ trove_dashboard_git_install_branch | replace('/', '_') }}"
+trove_dashboard_git_project_group: horizon_all

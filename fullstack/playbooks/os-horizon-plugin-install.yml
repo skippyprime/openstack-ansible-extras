@@ -1,0 +1,6 @@
+---
+- name: Install hoizon dashboard plugins
+  hosts: horizon_all
+  user: root
+  roles:
+    - role: "horizon_plugins"

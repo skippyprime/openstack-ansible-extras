@@ -1,0 +1,9 @@
+---
+horizon_enable_designate_ui: False
+
+horizon_enable_trove_ui: False
+
+# plugin pip packages
+horizon_plugin_pip_packages:
+  - trove_dashboard
+  - designate_dashboard
